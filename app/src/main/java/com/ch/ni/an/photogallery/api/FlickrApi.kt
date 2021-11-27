@@ -12,7 +12,13 @@ interface FlickrApi {
                 "&nojsoncallback=1" +
                 "&extras=url_s"
     )
-    fun fetchPhotos() : Call<FlickrResponse>
+    fun fetchPhotos() : Call<PhotoResponse>
 }
+
+            /**
+                You must have your own api key flickr
+                Just reg on flickr.com and get it.
+                Insert your key into the API_KEY value and enjoy
+            */
 
 const val API_KEY = ""
