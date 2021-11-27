@@ -1,18 +1,15 @@
 package com.ch.ni.an.photogallery
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.ch.ni.an.photogallery.api.FlickrApi
-import com.ch.ni.an.photogallery.api.FlickrResponse
 import com.ch.ni.an.photogallery.api.PhotoResponse
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.lang.Exception
 
 class FlickrFetch {
 
@@ -36,34 +33,25 @@ class FlickrFetch {
     }
 
 
-    fun fetch(): LiveData<List<GalleryItem>>{
-        val responseLiveData: MutableLiveData<List<GalleryItem>> = MutableLiveData()
-
-        val flickrRequest = flickrApi.fetchPhotos()
-
-        flickrRequest.enqueue(object : Callback<PhotoResponse>{
-            override fun onResponse(
-                call :Call<PhotoResponse>,
-                response :Response<PhotoResponse>,
-            ) {
-                val photoResponse: PhotoResponse? = response.body()
-                Log.e("Tag", photoResponse?.galleryItem.toString())
-                val galleryItems: List<GalleryItem> = photoResponse?.galleryItem
-                    ?: mutableListOf()
+   suspend fun fetch(page :Int) :List<GalleryItem> {
+        var galleryItems :MutableList<GalleryItem> = mutableListOf()
+        val flickrRequest = flickrApi.fetchPhotos(page)
+           return if(flickrRequest.isSuccessful){
+                val photoResponse = flickrRequest.body()
+                galleryItems = photoResponse?.galleryItem?.toMutableList() ?: mutableListOf()
                 galleryItems.filterNot {
                     it.url.isBlank()
                 }
-                responseLiveData.value = galleryItems
+                galleryItems
+            } else {
+              emptyList()
             }
-
-            override fun onFailure(call :Call<PhotoResponse>, t :Throwable) {
-                Log.e("Fail", t.message.toString())
-            }
-        })
-
-        return responseLiveData
     }
 
 
 
-}
+
+    }
+
+
+

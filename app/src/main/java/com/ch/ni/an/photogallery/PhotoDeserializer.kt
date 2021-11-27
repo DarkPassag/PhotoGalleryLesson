@@ -1,6 +1,6 @@
 package com.ch.ni.an.photogallery
 
-import android.util.Log
+
 import com.ch.ni.an.photogallery.api.PhotoResponse
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer

@@ -1,7 +1,8 @@
 package com.ch.ni.an.photogallery.api
 
-import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.GET
+import retrofit2.http.Query
 
 interface FlickrApi {
 
@@ -12,7 +13,8 @@ interface FlickrApi {
                 "&nojsoncallback=1" +
                 "&extras=url_s"
     )
-    fun fetchPhotos() : Call<PhotoResponse>
+   suspend fun fetchPhotos(
+        @Query("page") page: Int) : Response<PhotoResponse>
 }
 
             /**
