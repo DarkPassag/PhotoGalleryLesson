@@ -1,10 +1,8 @@
 package com.ch.ni.an.photogallery
 
-import android.util.Log
-import androidx.core.app.NotificationCompat
+
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.ch.ni.an.photogallery.api.PhotoResponse
 import java.io.IOException
 
 
@@ -31,7 +29,6 @@ class PhotoPagingSource(
 
             val response = flickrFetch.fetch(page)
             val photos: List<GalleryItem> = response
-            Log.e("List size", "${photos.size}")
             val nextLey = if(photos.size < 100 ) null else page + 1
             val prefKey = if(page == 1) null else -1
             LoadResult.Page(photos, prefKey, nextLey)

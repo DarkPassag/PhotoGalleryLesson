@@ -1,11 +1,13 @@
 package com.ch.ni.an.photogallery
 
 import android.os.Bundle
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModelProvider
@@ -27,11 +29,13 @@ class PhotoGalleryFragment: Fragment() {
     private lateinit var recyclerView :RecyclerView
     private lateinit var myModel: PhotoGalleryViewModel
     private lateinit var adapter: PhotoAdapter
+    private lateinit var widthScreen :SizeScreen
 
     override fun onCreate(savedInstanceState :Bundle?) {
         super.onCreate(savedInstanceState)
 
         myModel = ViewModelProvider(this).get(PhotoGalleryViewModel::class.java)
+        widthScreen = SizeScreen(requireContext())
     }
 
     override fun onCreateView(
@@ -41,9 +45,15 @@ class PhotoGalleryFragment: Fragment() {
     ) :View? {
         val photoFragment = inflater.inflate(R.layout.fragment_photo_gallery, container, false)
         adapter = PhotoAdapter()
+        val width = widthScreen.widthScreen
+
+        var spanCount = 3
+
+        if(width in 1081..1799) spanCount = 4
+        if(width > 1800) spanCount = 5
 
         recyclerView = photoFragment.findViewById(R.id.photo_recycler_view)
-        recyclerView.layoutManager = GridLayoutManager(context, 3)
+        recyclerView.layoutManager = GridLayoutManager(context, spanCount)
         recyclerView.adapter = adapter
 
 
@@ -62,6 +72,10 @@ class PhotoGalleryFragment: Fragment() {
 
             }
         }
+
+
+
+
     }
 
     companion object {
@@ -76,9 +90,11 @@ class PhotoGalleryFragment: Fragment() {
 
 
     private class PhotoHolder(
-        itemTextView :TextView
-    ): RecyclerView.ViewHolder(itemTextView){
-        val bindTitle: (CharSequence) -> Unit = itemTextView::setText
+        item :View
+    ): RecyclerView.ViewHolder(item){
+        val bindTitle: (CharSequence) -> Unit = {
+            itemView.findViewById<TextView>(R.id.titleTextView).text = it
+        }
     }
 
 
@@ -91,8 +107,9 @@ class PhotoGalleryFragment: Fragment() {
         }
 
         override fun onCreateViewHolder(parent :ViewGroup, viewType :Int) :PhotoHolder {
-            val textView = TextView(parent.context)
-            return PhotoHolder(textView)
+            val inflater = LayoutInflater.from(parent.context)
+            val view = inflater.inflate(R.layout.reyclerview_item, parent, false)
+            return PhotoHolder(view)
         }
     }
 
