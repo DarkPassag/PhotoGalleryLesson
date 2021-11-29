@@ -4,11 +4,10 @@ import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.os.Handler
 import android.os.HandlerThread
+import android.os.Looper
 import android.os.Message
 import android.util.Log
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.*
 import java.util.concurrent.ConcurrentHashMap
 
 
@@ -18,31 +17,8 @@ private const val MESSAGE_DOWNLOAD = 0
 class ThumbnailDownloader< in T>(
     private val responseHandler: Handler,
     private val onThumbnailDownloader : (T, Bitmap) -> Unit
-): HandlerThread(TAG), LifecycleObserver {
 
-    val fragmentLifecycleObserver: LifecycleObserver = object : LifecycleObserver {
-
-        @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-        fun setup(){
-            start()
-            looper
-        }
-
-        @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-        fun tearDown(){
-            quit()
-        }
-    }
-
-    val viewLifecycleObserver: LifecycleObserver = object : LifecycleObserver {
-
-        @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-            fun clearQueue(){
-                requestHandler.removeMessages(MESSAGE_DOWNLOAD)
-                requestMap.clear()
-            }
-
-    }
+): HandlerThread(TAG), LifecycleEventObserver {
 
     private var hasQuit = false
 
@@ -56,7 +32,7 @@ class ThumbnailDownloader< in T>(
     @Suppress("UNCHECKED_CAST")
     @SuppressLint("HandlerLeak")
     override fun onLooperPrepared() {
-        requestHandler = object : Handler(){
+        requestHandler = object : Handler(Looper.myLooper()!!){
             override fun handleMessage(msg :Message) {
                 if(msg.what == MESSAGE_DOWNLOAD) {
                     val target = msg.obj as T
@@ -94,6 +70,25 @@ class ThumbnailDownloader< in T>(
             requestMap.remove(target)
             onThumbnailDownloader(target, bitmap)
         })
+    }
+
+    override fun onStateChanged(source :LifecycleOwner, event :Lifecycle.Event) {
+        when(event){
+            Lifecycle.Event.ON_CREATE -> {
+                Log.e("TAG", "StateChanged: Create")
+            }
+            Lifecycle.Event.ON_START -> {}
+            Lifecycle.Event.ON_RESUME -> {}
+            Lifecycle.Event.ON_PAUSE -> {}
+            Lifecycle.Event.ON_STOP -> {}
+            Lifecycle.Event.ON_DESTROY -> {
+                requestMap.clear()
+                quit()
+
+            }
+            Lifecycle.Event.ON_ANY -> {}
+
+        }
     }
 
 

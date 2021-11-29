@@ -5,6 +5,7 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -24,18 +25,17 @@ class PhotoGalleryFragment: Fragment() {
     private lateinit var thumbnailDownloader :ThumbnailDownloader<PhotoHolder>
 
 
+
     override fun onCreate(savedInstanceState :Bundle?) {
         super.onCreate(savedInstanceState)
-        retainInstance = true
         myModel = ViewModelProvider(this).get(PhotoGalleryViewModel::class.java)
-        val responseHandler = Handler()
+        val responseHandler = Handler(Looper.getMainLooper())
         thumbnailDownloader = ThumbnailDownloader(
-            responseHandler) { photoHolder, bitmap ->
-            val drawable = BitmapDrawable(resources, bitmap)
-            photoHolder.bindTitle(drawable)
-        }
-        lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
-        myModel.fragmentLifecycle.value = viewLifecycleOwnerLiveData.value
+            responseHandler){ photoHolder, bitmap ->
+                val drawable = BitmapDrawable(resources, bitmap)
+                photoHolder.bindTitle(drawable)
+            }
+        thumbnailDownloader.start()
 
     }
 
@@ -46,30 +46,11 @@ class PhotoGalleryFragment: Fragment() {
     ) :View? {
         val photoFragment = inflater.inflate(R.layout.fragment_photo_gallery, container, false)
 
-//        lifecycle.addObserver(thumbnailDownloader.viewLifecycleObserver)
-
-
         myModel.galleryItemLiveData.observe(viewLifecycleOwner, {
             recyclerView.adapter = PhotoAdapter(it)
         })
 
-
-        myModel.fragmentLifecycle.value = viewLifecycleOwnerLiveData.value
-
-        myModel.fragmentLifecycle.observe(viewLifecycleOwner, {
-            it?.lifecycle?.addObserver(thumbnailDownloader.viewLifecycleObserver)
-            if(it?.lifecycle != null){
-                val state = it.lifecycle.currentState.name
-                Log.i("StartObserved", state)
-            }
-            if(it?.lifecycle == null){
-                it.lifecycle.removeObserver(thumbnailDownloader.viewLifecycleObserver)
-            }
-
-
-
-        })
-
+        thumbnailDownloader.onStateChanged(viewLifecycleOwner, Lifecycle.Event.ON_CREATE)
 
 
         recyclerView = photoFragment.findViewById(R.id.photo_recycler_view)
@@ -79,22 +60,13 @@ class PhotoGalleryFragment: Fragment() {
 
     }
 
-    override fun onViewCreated(view :View, savedInstanceState :Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        myModel.fragmentLifecycle.value = viewLifecycleOwnerLiveData.value
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
-        lifecycle.removeObserver(thumbnailDownloader.viewLifecycleObserver)
-        myModel.fragmentLifecycle.value = viewLifecycleOwnerLiveData.value
+        thumbnailDownloader.onStateChanged(viewLifecycleOwner, Lifecycle.Event.ON_DESTROY)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        lifecycle.removeObserver(thumbnailDownloader.fragmentLifecycleObserver)
-        myModel.fragmentLifecycle.value = viewLifecycleOwnerLiveData.value
-    }
+
+
 
     companion object {
         fun newInstance() : PhotoGalleryFragment{
