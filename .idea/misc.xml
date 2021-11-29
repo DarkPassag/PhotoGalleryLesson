@@ -5,6 +5,8 @@
       <map>
         <entry key="..\:/Users/admin/AndroidStudioProjects/PhotoGallery/app/src/main/res/layout/activity_photo_gallery.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/admin/AndroidStudioProjects/PhotoGallery/app/src/main/res/layout/fragment_photo_gallery.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/admin/AndroidStudioProjects/PhotoGallery/app/src/main/res/layout/list_item_gallery.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/admin/AndroidStudioProjects/PhotoGallery/app/src/main/res/layout/reyclerview_item.xml" value="0.67" />
       </map>
     </option>
   </component>

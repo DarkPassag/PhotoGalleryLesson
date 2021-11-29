@@ -1,6 +1,9 @@
 package com.ch.ni.an.photogallery
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
+import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.ch.ni.an.photogallery.api.FlickrApi
@@ -52,6 +55,13 @@ class FlickrFetch {
         })
 
         return responseLiveData
+    }
+
+    @WorkerThread
+    fun fetchPhoto(url :String) :Bitmap? {
+        val response = flickrApi.fetchUrlBytes(url).execute()
+        val bitmap = response.body()?.byteStream()?.use(BitmapFactory::decodeStream)
+        return bitmap
     }
 
 
